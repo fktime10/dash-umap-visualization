@@ -1,5 +1,6 @@
 import json
 import os
+import requests
 from typing import List, Tuple
 import pandas as pd
 from sentence_transformers import SentenceTransformer
