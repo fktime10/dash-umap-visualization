@@ -1,5 +1,3 @@
-# precompute_embeddings.py
-
 import json
 import os
 import logging

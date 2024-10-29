@@ -1,5 +1,3 @@
-# app.py
-
 import os
 import json
 import pickle
