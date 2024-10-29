@@ -7,13 +7,14 @@ from sklearn.preprocessing import normalize
 import umap
 import plotly.express as px
 from dash import Dash, dcc, html, Output, Input
+import dash_bootstrap_components as dbc
 import logging
 
 # Configure logging for debugging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Define paths to data files
+# Define paths to data files using relative paths
 DATA_FILES = {
     "file2": os.path.join('data', 'scl_tia_importable_gpt4_cleaned_train.jsonl'),
     "file3": os.path.join('data', 'TI_COS_intents.jsonl'),
@@ -314,36 +315,44 @@ def main():
         # Step 6: Launch Dash App
         logger.info("Launching Dash app...")
 
-        # Initialize Dash app
-        app = Dash(__name__)
+        # Initialize Dash app with Bootstrap theme
+        app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
         server = app.server  # Expose the server variable for deployments
 
-        # Define the app layout
-        app.layout = html.Div([
-            html.H1("Interactive UMAP Visualization"),
-            html.Div([
-                dcc.Graph(
-                    id='umap-scatter',
-                    figure=fig,
-                    style={'width': '100%', 'height': '80vh'}
+        # Define the app layout using Bootstrap components
+        app.layout = dbc.Container([
+            dbc.Row([
+                dbc.Col(
+                    html.H1("Interactive UMAP Visualization", className="text-center text-primary mb-4"),
+                    width=12
                 )
-            ], style={'width': '70%', 'display': 'inline-block'}),
-            html.Div([
-                html.H2("Selected Content"),
-                html.Div(
-                    id='selected-content',
-                    style={
-                        'whiteSpace': 'pre-wrap',
-                        'wordWrap': 'break-word',
-                        'border': '1px solid #ccc',
-                        'padding': '10px',
-                        'height': '80vh',
-                        'overflowY': 'scroll',
-                        'backgroundColor': '#f9f9f9'
-                    }
-                )
-            ], style={'width': '28%', 'display': 'inline-block', 'paddingLeft': '2%', 'verticalAlign': 'top'})
-        ], style={'padding': '20px'})
+            ]),
+            dbc.Row([
+                dbc.Col(
+                    dcc.Graph(
+                        id='umap-scatter',
+                        figure=fig,
+                        style={'height': '80vh'}
+                    ),
+                    width=8
+                ),
+                dbc.Col([
+                    html.H4("Selected Content", className="text-center text-secondary"),
+                    html.Div(
+                        id='selected-content',
+                        style={
+                            'whiteSpace': 'pre-wrap',
+                            'wordWrap': 'break-word',
+                            'border': '1px solid #ccc',
+                            'padding': '10px',
+                            'height': '80vh',
+                            'overflowY': 'scroll',
+                            'backgroundColor': '#f9f9f9'
+                        }
+                    )
+                ], width=4)
+            ])
+        ], fluid=True)
 
         # Define the callback to update the selected content
         @app.callback(
@@ -359,8 +368,13 @@ def main():
                 content = point['customdata'][0]
                 label = point['customdata'][1]
 
-                # Format the content (Markdown)
-                return f"**Label:** {label}\n\n**Content:**\n{content}"
+                # Format the content using Bootstrap Card
+                return dbc.Card([
+                    dbc.CardHeader(f"Label: {label}"),
+                    dbc.CardBody([
+                        html.P(content, className="card-text")
+                    ])
+                ], color="light", outline=True)
             except (IndexError, KeyError, TypeError) as e:
                 logger.error(f"Error accessing clickData: {e}")
                 return "Error fetching content."
